@@ -22,10 +22,37 @@ async def register(
     return new_user
 
 @router.get("/", response_model=List[User])
-async def register(
+async def get_users(
         db: AsyncSession = Depends(get_db)
 ):
     user_repository = SQLUserRepository(db)
     user_service = UserUseCases(user_repository)
     users = await user_service.get_all()
     return users
+
+@router.get("/{email}", response_model=User)
+async def get_user(email: str,
+                   db: AsyncSession = Depends(get_db)
+):
+    user_repository = SQLUserRepository(db)
+    user_service = UserUseCases(user_repository)
+    user = await user_service.get_by_email(email)
+    return user
+
+@router.put("/{email}", response_model=dict)
+async def change_info(email: str, new_password:str,
+                   db: AsyncSession = Depends(get_db)
+):
+    user_repository = SQLUserRepository(db)
+    user_service = UserUseCases(user_repository)
+    user = await user_service.update_user(email, new_password)
+    return {"message": "User updated successfully"}
+
+@router.delete("/{email}", response_model=dict)
+async def remove_user(email: str,
+                   db: AsyncSession = Depends(get_db)
+):
+    user_repository = SQLUserRepository(db)
+    user_service = UserUseCases(user_repository)
+    user = await user_service.delete_user(email)
+    return {"message": "User deleted successfully"}

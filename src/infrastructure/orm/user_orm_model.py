@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 
-from src.domain.models.user import User
-from src.infrastructure.db.base_class import Base
+from domain.models.user import User
+from infrastructure.db.base_class import Base
 
 class UserOrmModel(Base):
     __tablename__ = "users"

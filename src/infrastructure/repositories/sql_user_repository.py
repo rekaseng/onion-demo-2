@@ -30,3 +30,34 @@ class SQLUserRepository(UserRepository):
 
         user = orm_user.to_domain()
         return user
+    
+    async def update_user(self, email: str, password: str) -> None:
+        # Check if the user exists
+        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=email))
+        orm_user = result.scalars().first()
+
+        if orm_user is None:
+            return None
+
+        # Update the user's password
+        orm_user.hashed_password = password
+        await self.db_session.commit()
+    
+    async def delete_user(self, email: str) -> None:
+        # Check if the user exists and the password is correct
+        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=email))
+        orm_user = result.scalars().first()
+        if orm_user is None:
+            return None
+        
+        # Delete the user
+        await self.db_session.delete(orm_user)
+        await self.db_session.commit()
+
+
+        
+
+
+
+
+

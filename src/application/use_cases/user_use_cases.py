@@ -20,3 +20,18 @@ class UserUseCases:
     async def get_all(self) -> List[User]:
         users = await self.user_repository.get_all()
         return users
+    
+    async def get_by_email(self, email:str) -> User:
+        user = await self.user_repository.get_by_email(email)
+        return user
+    
+    async def update_user(self, email:str, password:str)-> None:
+        hashed_password = password + "_hashed"
+        await self.user_repository.update_user(email, hashed_password)
+
+    async def delete_user(self, email:str) -> None:
+        await self.user_repository.delete_user(email)
+
+
+
+        
