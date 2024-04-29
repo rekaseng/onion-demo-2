@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from application.dto.user_dto import UserRegistrationDTO
+from application.dto.user_dto import UserRegistrationDTO, UserUpdatePasswordDTO, DeleteUserDTO
 from api.deps import get_db
 from application.use_cases.user_use_cases import UserUseCases
 from domain.models.user import User
@@ -40,19 +40,19 @@ async def get_user(email: str,
     return user
 
 @router.put("/{email}", response_model=dict)
-async def change_info(email: str, new_password:str,
+async def change_userpassword(updatepassword_dto: UserUpdatePasswordDTO,
                    db: AsyncSession = Depends(get_db)
 ):
     user_repository = SQLUserRepository(db)
     user_service = UserUseCases(user_repository)
-    user = await user_service.update_user(email, new_password)
+    user = await user_service.update_password(updatepassword_dto)
     return {"message": "User updated successfully"}
 
 @router.delete("/{email}", response_model=dict)
-async def remove_user(email: str,
+async def remove_user(deleteuser_dto: DeleteUserDTO,
                    db: AsyncSession = Depends(get_db)
 ):
     user_repository = SQLUserRepository(db)
     user_service = UserUseCases(user_repository)
-    user = await user_service.delete_user(email)
+    user = await user_service.delete_user(deleteuser_dto)
     return {"message": "User deleted successfully"}

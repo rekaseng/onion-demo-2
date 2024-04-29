@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
-from domain.models.user import User
+from domain.models.user import User, UpdatePassword, DeleteUser
 from domain.repositories.user_repository import UserRepository
 from infrastructure.orm.user_orm_model import UserOrmModel
 
@@ -31,21 +31,21 @@ class SQLUserRepository(UserRepository):
         user = orm_user.to_domain()
         return user
     
-    async def update_user(self, email: str, password: str) -> None:
-        # Check if the user exists
-        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=email))
+    async def update_password(self, update_password: UpdatePassword) -> None:
+        # Check if the user exists and the password is correct
+        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=update_password.email, hashed_password=update_password.current_password))
         orm_user = result.scalars().first()
 
         if orm_user is None:
             return None
 
         # Update the user's password
-        orm_user.hashed_password = password
+        orm_user.hashed_password = update_password.new_password
         await self.db_session.commit()
     
-    async def delete_user(self, email: str) -> None:
+    async def delete_user(self, deleteUser: DeleteUser) -> None:
         # Check if the user exists and the password is correct
-        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=email))
+        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=deleteUser.email, hashed_password=deleteUser.password))
         orm_user = result.scalars().first()
         if orm_user is None:
             return None

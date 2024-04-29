@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
-from domain.models.user import User
+from domain.models.user import User, UpdatePassword, DeleteUser
 
 class UserRepository(ABC):
     @abstractmethod
@@ -16,9 +16,9 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def update_user(self, email: str, new_password:str) -> None:
+    async def update_password(self, updatePassword:UpdatePassword) -> None:
         pass
     
     @abstractmethod
-    async def delete_user(self, email: str) -> None:
+    async def delete_user(self, deleteUser:DeleteUser) -> None:
         pass

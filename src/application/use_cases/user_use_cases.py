@@ -2,7 +2,7 @@ from typing import List
 
 from domain.models.user import User
 from domain.repositories.user_repository import UserRepository
-from application.dto.user_dto import UserRegistrationDTO
+from application.dto.user_dto import UserRegistrationDTO, UserUpdatePasswordDTO, DeleteUserDTO
 
 
 class UserUseCases:
@@ -25,12 +25,14 @@ class UserUseCases:
         user = await self.user_repository.get_by_email(email)
         return user
     
-    async def update_user(self, email:str, password:str)-> None:
-        hashed_password = password + "_hashed"
-        await self.user_repository.update_user(email, hashed_password)
+    async def update_password(self, updatepassword_dto: UserUpdatePasswordDTO)-> None:
+        updatepassword_dto.new_password = updatepassword_dto.new_password + "_hashed"
+        updatepassword_dto.current_password = updatepassword_dto.current_password + "_hashed"
+        await self.user_repository.update_password(updatepassword_dto)
 
-    async def delete_user(self, email:str) -> None:
-        await self.user_repository.delete_user(email)
+    async def delete_user(self, deleteuser_dto: DeleteUserDTO) -> None:
+        deleteuser_dto.password = deleteuser_dto.password + "_hashed"
+        await self.user_repository.delete_user(deleteuser_dto)
 
 
 
