@@ -5,6 +5,7 @@ from sqlalchemy.future import select
 from domain.models.user import User, UpdatePassword, DeleteUser
 from domain.repositories.user_repository import UserRepository
 from infrastructure.orm.user_orm_model import UserOrmModel
+from fastapi import HTTPException
 
 class SQLUserRepository(UserRepository):
     def __init__(self, db_session: Session):
@@ -32,24 +33,41 @@ class SQLUserRepository(UserRepository):
         return user
     
     async def update_password(self, update_password: UpdatePassword) -> None:
-        # Check if the user exists and the password is correct
-        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=update_password.email, hashed_password=update_password.current_password))
-        orm_user = result.scalars().first()
+        user_result = await self.db_session.execute(select(UserOrmModel).filter_by(email=update_password.email))
+        orm_user = user_result.scalars().first()
+        
+        if orm_user is None:
+            # User does not exist
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        credential_result = await self.db_session.execute(select(UserOrmModel).filter_by(email=update_password.email, hashed_password=update_password.current_password))
+        orm_user = credential_result.scalars().first()
 
         if orm_user is None:
-            return None
+        # Check if the password is correct
+            raise HTTPException(status_code=401, detail="Incorrect password")
 
         # Update the user's password
         orm_user.hashed_password = update_password.new_password
         await self.db_session.commit()
     
+
     async def delete_user(self, deleteUser: DeleteUser) -> None:
-        # Check if the user exists and the password is correct
-        result = await self.db_session.execute(select(UserOrmModel).filter_by(email=deleteUser.email, hashed_password=deleteUser.password))
-        orm_user = result.scalars().first()
-        if orm_user is None:
-            return None
+        # Check if the user email exists
+        user_result = await self.db_session.execute(select(UserOrmModel).filter_by(email=deleteUser.email))
+        orm_user = user_result.scalars().first()
         
+        if orm_user is None:
+            # User does not exist
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        credential_result = await self.db_session.execute(select(UserOrmModel).filter_by(email=deleteUser.email, hashed_password=deleteUser.password))
+        orm_user = credential_result.scalars().first()
+
+        if orm_user is None:
+        # Check if the password is correct
+            raise HTTPException(status_code=401, detail="Incorrect password")
+
         # Delete the user
         await self.db_session.delete(orm_user)
         await self.db_session.commit()
