@@ -46,7 +46,7 @@ async def change_userpassword(updatepassword_dto: UserUpdatePasswordDTO,
     user_repository = SQLUserRepository(db)
     user_service = UserUseCases(user_repository)
     user = await user_service.update_password(updatepassword_dto)
-    return {"message": "User updated successfully"}
+    return {"message": "Password updated successfully"}
 
 @router.delete("/{email}", response_model=dict)
 async def remove_user(deleteuser_dto: DeleteUserDTO,

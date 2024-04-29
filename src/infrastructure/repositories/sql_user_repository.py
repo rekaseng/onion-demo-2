@@ -18,6 +18,12 @@ class SQLUserRepository(UserRepository):
         return users
 
     async def add(self, user: User) -> None:
+        user_result = await self.db_session.execute(select(UserOrmModel).filter_by(email=user.email))
+        orm_user = user_result.scalars().first()
+        
+        if orm_user:
+            raise HTTPException(status_code=409, detail="User with this email already exists")
+        
         orm_user = UserOrmModel.from_domain(user)
         await self.db_session.merge(orm_user)
         await self.db_session.commit()
@@ -46,6 +52,11 @@ class SQLUserRepository(UserRepository):
         if orm_user is None:
         # Check if the password is correct
             raise HTTPException(status_code=401, detail="Incorrect password")
+        
+        if update_password.current_password == update_password.new_password:
+            raise HTTPException(
+                status_code=400, detail="New password cannot be the same as the current one"
+        )
 
         # Update the user's password
         orm_user.hashed_password = update_password.new_password
