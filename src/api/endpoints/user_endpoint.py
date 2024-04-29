@@ -7,7 +7,6 @@ from api.deps import get_db
 from application.use_cases.user_use_cases import UserUseCases
 from domain.models.user import User
 from infrastructure.repositories.sql_user_repository import SQLUserRepository
-from dataclasses import asdict
 
 router = APIRouter()
 
